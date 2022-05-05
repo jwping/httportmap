@@ -1,0 +1,18 @@
+portmap:
+  # 监听端口
+  38085:
+    authorization:
+      # 身份验证用户名和密码，可多个（符合yaml列表语法）
+      anshan: anshan
+    # 目标http的地址
+    dest: 172.16.59.106:30002
+
+  38086:
+    authorization:
+      jwping: jwping
+    dest: 172.16.59.106:5319
+
+  38087:
+    authorization:
+      ops: ops
+    dest: 172.16.59.106:5320
