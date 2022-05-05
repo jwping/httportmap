@@ -44,54 +44,58 @@ func main2() {
 
 func newAuthorizationHandle(destAddr DestAddr) func(w http.ResponseWriter, req *http.Request) {
 	authorizationHandle := func(w http.ResponseWriter, req *http.Request) {
-		auth := req.Header.Get("Authorization")
-		if auth == "" {
-			w.Header().Set("WWW-Authenticate", `Basic realm="Dotcoo User Login"`)
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
-		auths := strings.SplitN(auth, " ", 2)
-		if len(auths) != 2 {
-			w.Header().Set("WWW-Authenticate", `Basic realm="agent User Login"`)
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
-		authMethod := auths[0]
-		authB64 := auths[1]
-		switch authMethod {
-		case "Basic":
-			authstr, err := base64.StdEncoding.DecodeString(authB64)
-			if err != nil {
+		if destAddr.EnableAuth {
+			auth := req.Header.Get("Authorization")
+			if auth == "" {
+				w.Header().Set("WWW-Authenticate", `Basic realm="Dotcoo User Login"`)
+				w.WriteHeader(http.StatusUnauthorized)
+				return
+			}
+			auths := strings.SplitN(auth, " ", 2)
+			if len(auths) != 2 {
 				w.Header().Set("WWW-Authenticate", `Basic realm="agent User Login"`)
 				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}
-			userPwd := strings.SplitN(string(authstr), ":", 2)
-			if len(userPwd) != 2 {
+			authMethod := auths[0]
+			authB64 := auths[1]
+			switch authMethod {
+			case "Basic":
+				authstr, err := base64.StdEncoding.DecodeString(authB64)
+				if err != nil {
+					w.Header().Set("WWW-Authenticate", `Basic realm="agent User Login"`)
+					w.WriteHeader(http.StatusUnauthorized)
+					return
+				}
+				userPwd := strings.SplitN(string(authstr), ":", 2)
+				if len(userPwd) != 2 {
+					w.Header().Set("WWW-Authenticate", `Basic realm="agent User Login"`)
+					w.WriteHeader(http.StatusUnauthorized)
+					return
+				}
+				username := userPwd[0]
+				password := userPwd[1]
+				if destAddr.Authorization[username] != password {
+					w.Header().Set("WWW-Authenticate", `Basic realm="agent User Login"`)
+					w.WriteHeader(http.StatusUnauthorized)
+					return
+				}
+			default:
 				w.Header().Set("WWW-Authenticate", `Basic realm="agent User Login"`)
 				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}
-			username := userPwd[0]
-			password := userPwd[1]
-			if destAddr.Authorization[username] != password {
-				w.Header().Set("WWW-Authenticate", `Basic realm="agent User Login"`)
-				w.WriteHeader(http.StatusUnauthorized)
-				return
-			}
-		default:
-			w.Header().Set("WWW-Authenticate", `Basic realm="agent User Login"`)
-			w.WriteHeader(http.StatusUnauthorized)
-			return
+
+			// 因为我们加了身份验证头，所以在"向后传递"的时候需求去掉这个请求头（如果用户访问的后端本身也带这个请求头，，，那就GG）
+			req.Header.Del("Authorization")
 		}
+
 		// io.WriteString(w, "hello, world!\n")
 
 		// fmt.Printf("请求头：%v\n", req.Header)
 		transport := http.DefaultTransport
 		outReq := new(http.Request)
 		*outReq = *req // this only does shallow copies of maps
-		// 因为我们加了身份验证头，所以在"向后传递"的时候需求去掉这个请求头（如果用户访问的后端本身也带这个请求头，，，那就GG）
-		outReq.Header.Del("Authorization")
 		outReq.URL.Scheme = "http"
 		outReq.URL.Host = destAddr.Dest
 		if clientIP, _, err := net.SplitHostPort(req.RemoteAddr); err == nil {
@@ -122,6 +126,8 @@ func newAuthorizationHandle(destAddr DestAddr) func(w http.ResponseWriter, req *
 }
 
 type DestAddr struct {
+	Enable        bool              `yaml:"enable"`
+	EnableAuth    bool              `yaml:"enable_auth"`
 	Authorization map[string]string `yaml:"authorization"`
 	Dest          string            `yaml:"dest"`
 }
@@ -131,6 +137,9 @@ type ProxyPortMap struct {
 }
 
 func startHttpServer(srcPort string, destAddr DestAddr) {
+	if !destAddr.Enable {
+		return
+	}
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", newAuthorizationHandle(destAddr))
 	log.Printf("linsten %s -> %s\n", srcPort, destAddr.Dest)

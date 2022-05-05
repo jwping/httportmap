@@ -1,6 +1,10 @@
 portmap:
   # 监听端口
   38085:
+    # 此http映射是否启用
+    enable: true
+    # 身份验证器是否启用
+    enable_auth: false
     authorization:
       # 身份验证用户名和密码，可多个（符合yaml列表语法）
       anshan: anshan
@@ -8,11 +12,15 @@ portmap:
     dest: 172.16.59.106:30002
 
   38086:
+    enable: true
+    enable_auth: true
     authorization:
       jwping: jwping
     dest: 172.16.59.106:5319
 
   38087:
+    enable: true
+    enable_auth: true
     authorization:
       ops: ops
     dest: 172.16.59.106:5320
