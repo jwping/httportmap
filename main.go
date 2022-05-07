@@ -1,50 +1,53 @@
 package main
 
 import (
+	"context"
 	"encoding/base64"
+	"encoding/json"
 	"flag"
 	"io"
 	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
+	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 
-	"github.com/elazarl/goproxy"
-	"github.com/elazarl/goproxy/ext/auth"
 	"gopkg.in/yaml.v3"
 )
 
 // http_proxy 不是我们想要的
-func main2() {
-	proxy := goproxy.NewProxyHttpServer()
-	proxy.Verbose = true
-	auth.ProxyBasic(proxy, "test123", func(user, passwd string) bool {
-		log.Printf("验证的用户：%s - %s\n", user, passwd)
-		if user != "anshan" || passwd != "hello" {
-			return false
-		}
-		return true
-	})
+// func main2() {
+// 	proxy := goproxy.NewProxyHttpServer()
+// 	proxy.Verbose = true
+// 	auth.ProxyBasic(proxy, "test123", func(user, passwd string) bool {
+// 		log.Printf("验证的用户：%s - %s\n", user, passwd)
+// 		if user != "anshan" || passwd != "hello" {
+// 			return false
+// 		}
+// 		return true
+// 	})
 
-	// https也一样过滤， 代价就是ssl证书需要手动提供
-	proxy.OnRequest().HandleConnect(goproxy.AlwaysMitm)
+// 	// https也一样过滤， 代价就是ssl证书需要手动提供
+// 	proxy.OnRequest().HandleConnect(goproxy.AlwaysMitm)
 
-	proxy.OnRequest().DoFunc(func(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
-		ip, _, err := net.SplitHostPort(req.RemoteAddr)
-		if err != nil {
-			log.Print(err)
-		}
-		log.Printf("[%d] %s --> %s %s", ctx.Session, ip, req.Method, req.URL)
-		return req, nil
-	})
+// 	proxy.OnRequest().DoFunc(func(req *http.Request, ctx *goproxy.ProxyCtx) (*http.Request, *http.Response) {
+// 		ip, _, err := net.SplitHostPort(req.RemoteAddr)
+// 		if err != nil {
+// 			log.Print(err)
+// 		}
+// 		log.Printf("[%d] %s --> %s %s", ctx.Session, ip, req.Method, req.URL)
+// 		return req, nil
+// 	})
 
-	log.Fatal(http.ListenAndServe(":8080", proxy))
-}
+// 	log.Fatal(http.ListenAndServe(":8080", proxy))
+// }
 
-func newAuthorizationHandle(destAddr DestAddr) func(w http.ResponseWriter, req *http.Request) {
+func newAuthorizationHandle(srcPort string) func(w http.ResponseWriter, req *http.Request) {
 	authorizationHandle := func(w http.ResponseWriter, req *http.Request) {
-		if destAddr.EnableAuth {
+		if httPortMap.PortMap[srcPort].EnableAuth {
 			auth := req.Header.Get("Authorization")
 			if auth == "" {
 				w.Header().Set("WWW-Authenticate", `Basic realm="Dotcoo User Login"`)
@@ -75,7 +78,7 @@ func newAuthorizationHandle(destAddr DestAddr) func(w http.ResponseWriter, req *
 				}
 				username := userPwd[0]
 				password := userPwd[1]
-				if destAddr.Authorization[username] != password {
+				if httPortMap.PortMap[srcPort].Authorization[username] != password {
 					w.Header().Set("WWW-Authenticate", `Basic realm="agent User Login"`)
 					w.WriteHeader(http.StatusUnauthorized)
 					return
@@ -92,12 +95,11 @@ func newAuthorizationHandle(destAddr DestAddr) func(w http.ResponseWriter, req *
 
 		// io.WriteString(w, "hello, world!\n")
 
-		// fmt.Printf("请求头：%v\n", req.Header)
 		transport := http.DefaultTransport
 		outReq := new(http.Request)
 		*outReq = *req // this only does shallow copies of maps
 		outReq.URL.Scheme = "http"
-		outReq.URL.Host = destAddr.Dest
+		outReq.URL.Host = httPortMap.PortMap[srcPort].Dest
 		if clientIP, _, err := net.SplitHostPort(req.RemoteAddr); err == nil {
 			if prior, ok := outReq.Header["X-Forwarded-For"]; ok {
 				clientIP = strings.Join(prior, ", ") + ", " + clientIP
@@ -126,43 +128,141 @@ func newAuthorizationHandle(destAddr DestAddr) func(w http.ResponseWriter, req *
 }
 
 type DestAddr struct {
-	Enable        bool              `yaml:"enable"`
+	// Enable        bool              `yaml:"enable"`
 	EnableAuth    bool              `yaml:"enable_auth"`
 	Authorization map[string]string `yaml:"authorization"`
 	Dest          string            `yaml:"dest"`
+
+	srcPort string
+	// server  *http.Server
+	shutdownCancel context.CancelFunc
 }
 
-type ProxyPortMap struct {
-	PortMap map[string]DestAddr `yaml:"portmap"`
+func (d *DestAddr) update(dest DestAddr) {
+	d.srcPort = dest.srcPort
+	d.EnableAuth = dest.EnableAuth
+	d.Authorization = dest.Authorization
+	d.Dest = dest.Dest
+	// d.Enable = dest.Enable
+
 }
 
-func startHttpServer(srcPort string, destAddr DestAddr) {
-	if !destAddr.Enable {
+type HttPortMap struct {
+	System struct {
+		Listen string `yaml:"listen"`
+	} `yaml:"system"`
+	PortMap map[string]*DestAddr `yaml:"portmap"`
+}
+
+func startHttpServer(srcPort string) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", newAuthorizationHandle(srcPort))
+	log.Printf("linsten %s -> %s\n", srcPort, httPortMap.PortMap[srcPort].Dest)
+
+	// listener, err := net.Listen("tcp", ":"+srcPort)
+	// if err != nil {
+	// 	log.Printf("tcp:%s listener err: %v\n", srcPort, err)
+	// 	return
+	// }
+
+	// destAddr := proxyPortMap.PortMap[srcPort]
+	// destAddr.listener = listener
+
+	srv := http.Server{
+		Addr:    ":" + srcPort,
+		Handler: mux,
+	}
+
+	go srv.ListenAndServe()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	httPortMap.PortMap[srcPort].shutdownCancel = cancel
+	go func() {
+		select {
+		case <-ctx.Done():
+			srv.Shutdown(ctx)
+		}
+	}()
+}
+
+var httPortMap = HttPortMap{
+	PortMap: map[string]*DestAddr{},
+}
+
+func reloadConfig(cPath string) {
+	cData, err := ioutil.ReadFile(cPath)
+	if err != nil {
+		log.Printf("读取配置文件异常：%v\n", err)
 		return
 	}
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", newAuthorizationHandle(destAddr))
-	log.Printf("linsten %s -> %s\n", srcPort, destAddr.Dest)
-	err := http.ListenAndServe(":"+srcPort, mux)
-	if err != nil {
-		log.Printf("%s listen err: %v\n", srcPort, err)
+
+	var thttPortMap HttPortMap
+	if err := yaml.Unmarshal(cData, &thttPortMap); err != nil {
+		log.Printf("yaml 反序列化失败：%v\n", err)
+		return
 	}
+
+	// fmt.Printf("反序列化结构：%v\n", tproxyPortMap.PortMap["38085"])
+
+	for srcPort, destAddr := range httPortMap.PortMap {
+		_, ok := thttPortMap.PortMap[srcPort]
+		if !ok {
+			log.Printf("%s 从映射地址池中移除！\n", srcPort)
+			destAddr.shutdownCancel()
+			delete(httPortMap.PortMap, srcPort)
+		}
+	}
+
+	for srcPort, destAddr := range thttPortMap.PortMap {
+		destAddr.srcPort = srcPort
+
+		_, ok := httPortMap.PortMap[srcPort]
+
+		if ok {
+			httPortMap.PortMap[srcPort].update(*destAddr)
+		} else {
+			httPortMap.PortMap[srcPort] = destAddr
+			startHttpServer(srcPort)
+		}
+	}
+
+	httPortMap.System = thttPortMap.System
+}
+
+func httpServer() {
+	http.HandleFunc("/map", func(w http.ResponseWriter, r *http.Request) {
+
+		portMap := map[string]string{}
+		for srcPort, destAddr := range httPortMap.PortMap {
+			portMap[srcPort] = destAddr.Dest
+		}
+
+		data, err := json.Marshal(portMap)
+		if err != nil {
+			w.Write([]byte(err.Error()))
+		}
+
+		w.Write(data)
+	})
+
+	log.Printf("system listen: %s\n", httPortMap.System.Listen)
+	go http.ListenAndServe(httPortMap.System.Listen, nil)
 }
 
 func main() {
 	cPath := flag.String("config", "config.yaml", "指定配置文件")
 	flag.Parse()
-	cData, err := ioutil.ReadFile(*cPath)
-	if err != nil {
-		log.Printf("读取配置文件异常：%v\n", err)
-		return
-	}
-	var proxyPortMap ProxyPortMap
-	yaml.Unmarshal(cData, &proxyPortMap)
 
-	for srcPort, destAddr := range proxyPortMap.PortMap {
-		go startHttpServer(srcPort, destAddr)
-	}
+	reloadConfig(*cPath)
+	httpServer()
 
-	select {}
+	c := make(chan os.Signal)
+	signal.Notify(c, syscall.SIGHUP)
+
+	for {
+		select {
+		case <-c:
+			reloadConfig(*cPath)
+		}
+	}
 }
