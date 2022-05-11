@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/base64"
 	"encoding/json"
 	"flag"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -14,7 +16,9 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
 
+	gonanoid "github.com/matoous/go-nanoid/v2"
 	"gopkg.in/yaml.v3"
 )
 
@@ -147,10 +151,12 @@ func (d *DestAddr) update(dest DestAddr) {
 
 }
 
+type System struct {
+	Listen string `yaml:"listen"`
+}
+
 type HttPortMap struct {
-	System struct {
-		Listen string `yaml:"listen"`
-	} `yaml:"system"`
+	System  System               `yaml:"system"`
 	PortMap map[string]*DestAddr `yaml:"portmap"`
 }
 
@@ -249,9 +255,75 @@ func httpServer() {
 	go http.ListenAndServe(httPortMap.System.Listen, nil)
 }
 
+func generateConfig(mPath, ifs string) {
+	data, err := ioutil.ReadFile(mPath)
+	if err != nil {
+		log.Panicf("ReadFile err: %v\n", err)
+	}
+
+	portMap := map[string]*DestAddr{}
+
+	buffer := bytes.NewBuffer(data)
+	for {
+		line, err := buffer.ReadString(byte('\n'))
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			log.Printf("ReadString err: %v\n", err)
+			return
+		}
+
+		line = strings.Replace(line, "\n", "", -1)
+
+		array := strings.Split(line, ifs)
+
+		nanoid, err := gonanoid.New()
+		if err != nil {
+			log.Printf("%s nanoid生成失败：%v\n", array[0], err)
+			continue
+		}
+		portMap[array[0]] = &DestAddr{
+			EnableAuth: true,
+			Authorization: map[string]string{
+				"ops": nanoid,
+			},
+			Dest: array[1] + ":" + array[2],
+		}
+
+	}
+
+	httPortMap := HttPortMap{
+		System: System{
+			Listen: ":8080",
+		},
+		PortMap: portMap,
+	}
+
+	outData, err := yaml.Marshal(httPortMap)
+	if err != nil {
+		log.Printf("Marshal err: %v\n", err)
+		return
+	}
+
+	if err = ioutil.WriteFile(fmt.Sprintf("config_%d.yaml", time.Now().Unix()), outData, 0660); err != nil {
+		log.Printf("WriteFile err: %v\n", err)
+		return
+	}
+
+}
+
 func main() {
 	cPath := flag.String("config", "config.yaml", "指定配置文件")
+	mPath := flag.String("map", "", "指定http端口字典，用来生成配置文件的，指定此项之后只会生成配置文件！（没有默认值，不指定则使用配置文件来启动服务）")
+	ifs := flag.String("ifs", ":", "指定http字典每行的分隔符")
 	flag.Parse()
+
+	if *mPath != "" {
+		log.Printf("生成配置文件！\n")
+		generateConfig(*mPath, *ifs)
+		return
+	}
 
 	reloadConfig(*cPath)
 	httpServer()
