@@ -69,13 +69,14 @@ func newAuthorizationHandle(srcPort string) func(w http.ResponseWriter, req *htt
 			switch authMethod {
 			case "Basic":
 				authstr, err := base64.StdEncoding.DecodeString(authB64)
-				if err != nil {
+				if err != nil || string(authstr) == ":" {
 					w.Header().Set("WWW-Authenticate", `Basic realm="agent User Login"`)
 					w.WriteHeader(http.StatusUnauthorized)
 					return
 				}
+
 				userPwd := strings.SplitN(string(authstr), ":", 2)
-				if len(userPwd) != 2 {
+				if len(userPwd) != 2 || userPwd[0] == "" || userPwd[1] == "" {
 					w.Header().Set("WWW-Authenticate", `Basic realm="agent User Login"`)
 					w.WriteHeader(http.StatusUnauthorized)
 					return

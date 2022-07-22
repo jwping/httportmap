@@ -1,0 +1,403 @@
+system:
+    listen: :8080
+portmap:
+    "1080":
+        enable_auth: true
+        authorization:
+            ops: O8Ard1uMvy4Dqm_HGYlUz
+        dest: 172.21.52.25:80
+    "1984":
+        enable_auth: true
+        authorization:
+            ops: C1sQIktqSLrZwLIavHtE2
+        dest: 172.21.53.19:1984
+    "3333":
+        enable_auth: true
+        authorization:
+            ops: g0QNvlWYvbU1AcJNaNXed
+        dest: 172.21.52.61:3000
+    "5318":
+        enable_auth: true
+        authorization:
+            ops: BsktBI7PZYoye0eBdZYy9
+        dest: 172.21.53.18:3000
+    "5319":
+        enable_auth: true
+        authorization:
+            ops: YN1YhfdqXxotpg7nLQmGy
+        dest: 172.21.53.19:8081
+    "5320":
+        enable_auth: true
+        authorization:
+            ops: cDibbwm82vZl-LhgZ-tq3
+        dest: 172.21.53.20:3000
+    "8083":
+        enable_auth: true
+        authorization:
+            ops: cIR8zhz1pRXcu6drAA5tQ
+        dest: 172.21.53.18:8083
+    "8091":
+        enable_auth: true
+        authorization:
+            ops: cI9PYfZFh9YP0ad2cfK3m
+        dest: 172.21.53.18:9090
+    "9999":
+        enable_auth: true
+        authorization:
+            ops: OsPtz0-NEiEmB6KTLTIkH
+        dest: 36.33.26.200:999
+    "10009":
+        enable_auth: true
+        authorization:
+            ops: hbvlPXY40tcaLQrCLe5rY
+        dest: 172.21.51.11:55555
+    "10011":
+        enable_auth: true
+        authorization:
+            ops: -j4jNEOMSbLw2ZSba0M2x
+        dest: 172.21.51.46:28080
+    "10012":
+        enable_auth: true
+        authorization:
+            ops: xYIhBXCKUeaTjiFsDHmpf
+        dest: 172.21.52.21:9100
+    "10013":
+        enable_auth: true
+        authorization:
+            ops: rUwu7u9V9iE-s7XPYr7n3
+        dest: 172.21.52.21:9200
+    "10015":
+        enable_auth: true
+        authorization:
+            ops: yYbbNvvYahch7a2dzmj1n
+        dest: 172.21.52.12:8080
+    "10020":
+        enable_auth: true
+        authorization:
+            ops: Dcfvk8klCnYgeGbwizlLM
+        dest: 172.21.52.61:3000
+    "10022":
+        enable_auth: true
+        authorization:
+            ops: gEQJ8zO5cKIexqpzIaqLZ
+        dest: 172.21.52.11:8080
+    "10023":
+        enable_auth: true
+        authorization:
+            ops: 8G7farcoz7544g5h_D3ST
+        dest: 172.21.52.11:8088
+    "10030":
+        enable_auth: true
+        authorization:
+            ops: xTrI_P8tPTQWDEif5dSS2
+        dest: 172.21.51.52:5601
+    "10062":
+        enable_auth: true
+        authorization:
+            ops: QbbxYJwpqkyM-ttbcIriu
+        dest: 172.21.52.62:5000
+    "10084":
+        enable_auth: true
+        authorization:
+            ops: FuHWaxoBuwvR5WbjHpgOz
+        dest: 172.21.52.65:8081
+    "10088":
+        enable_auth: true
+        authorization:
+            ops: TcNxTMqj74GtqrR3eDWyP
+        dest: 172.22.241.30:9200
+    "10093":
+        enable_auth: true
+        authorization:
+            ops: 3himGgWSzB4eFURTceb-J
+        dest: 172.22.241.35:9016
+    "10094":
+        enable_auth: true
+        authorization:
+            ops: wmqAqlWXMMhcqM1gUCjlj
+        dest: 172.21.51.52:8090
+    "10096":
+        enable_auth: true
+        authorization:
+            ops: AGKmlLRdQVXdACAWy71c9
+        dest: 172.21.51.102:80
+    "10099":
+        enable_auth: true
+        authorization:
+            ops: mbwT_jCXEqMIStUGZKxPW
+        dest: 172.21.53.19:8848
+    "10101":
+        enable_auth: true
+        authorization:
+            ops: Tu4qJmaCnsHoH5dFUeFNk
+        dest: 172.21.51.102:5601
+    "10105":
+        enable_auth: true
+        authorization:
+            ops: rvu4n1_oefvl_a_EOiZyP
+        dest: 172.21.51.102:8123
+    "10113":
+        enable_auth: true
+        authorization:
+            ops: W_oWSW--WhBRMJBUSHg1G
+        dest: 172.21.52.12:9998
+    "10118":
+        enable_auth: true
+        authorization:
+            ops: SU7z2a6uA6yElHxbeydGV
+        dest: 172.21.53.20:41671
+    "10121":
+        enable_auth: true
+        authorization:
+            ops: OiqNr14enqhF_7JIchwjY
+        dest: 172.21.53.19:8080
+    "10131":
+        enable_auth: true
+        authorization:
+            ops: 1GcMHq0Z3-2E9lQHN3A0Q
+        dest: 172.21.122.47:30000
+    "10132":
+        enable_auth: true
+        authorization:
+            ops: syjEQvxjM4waqyF4TMb9Z
+        dest: 172.21.51.102:16686
+    "10135":
+        enable_auth: true
+        authorization:
+            ops: imC6U4bj3vxG-N5RBjt5Q
+        dest: 172.21.191.132:9801
+    "10136":
+        enable_auth: true
+        authorization:
+            ops: Zlu3Frz-n55fiksfihvNB
+        dest: 172.21.51.50:8090
+    "10137":
+        enable_auth: true
+        authorization:
+            ops: hBCwRp6xqYXq7vLpEea2a
+        dest: 172.21.51.50:18999
+    "10138":
+        enable_auth: true
+        authorization:
+            ops: QgPe_VucgDUohdafuJ197
+        dest: 172.21.51.50:8761
+    "10142":
+        enable_auth: true
+        authorization:
+            ops: igYJw--w9rQaXF3YG_ziU
+        dest: 172.22.241.150:9000
+    "10145":
+        enable_auth: true
+        authorization:
+            ops: w4TX6zBEow2kv2qVDZ1Fw
+        dest: 172.22.241.32:80
+    "10147":
+        enable_auth: true
+        authorization:
+            ops: Ttdp79rFdpkqrxXMZ9Ris
+        dest: 172.21.52.53:10023
+    "10150":
+        enable_auth: true
+        authorization:
+            ops: fT4RdNNY9PwX97H_uGEa1
+        dest: 172.21.53.20:41671
+    "15673":
+        enable_auth: true
+        authorization:
+            ops: l3T-Ex15MUUkTwwKgPDgy
+        dest: 10.248.131.240:8888
+    "15675":
+        enable_auth: true
+        authorization:
+            ops: tPxDM4jKg6iiACTmOYLUa
+        dest: 10.248.131.240:15672
+    "15676":
+        enable_auth: true
+        authorization:
+            ops: BXB3-_YWi179zQejoUMXM
+        dest: 10.248.131.240:8090
+    "15677":
+        enable_auth: true
+        authorization:
+            ops: oz_Sduu7eKjj7ChTD7abP
+        dest: 10.248.131.240:8087
+    "15678":
+        enable_auth: true
+        authorization:
+            ops: 0BMOE0jKXzxgbBeKsJlvG
+        dest: 10.248.131.240:8004
+    "15680":
+        enable_auth: true
+        authorization:
+            ops: 8bXAbEKKTm3XkhUDZgX8o
+        dest: 10.248.131.240:8099
+    "19093":
+        enable_auth: true
+        authorization:
+            ops: vZx4W2UwqhDgRCcbZLnfU
+        dest: 10.248.128.5:9090
+    "20097":
+        enable_auth: true
+        authorization:
+            ops: 5wt76aMOy6i1Nis8URirX
+        dest: 10.105.113.35:9000
+    "29090":
+        enable_auth: true
+        authorization:
+            ops: QmxMchkkwf-mkR862JeoL
+        dest: 172.21.53.19:29090
+    "30858":
+        enable_auth: true
+        authorization:
+            ops: jw3jjpXqr_mYyrANsR8x5
+        dest: 10.105.113.16:30858
+    "33333":
+        enable_auth: true
+        authorization:
+            ops: 09R1GbeMKcESXp0He42h4
+        dest: 172.31.123.10:6080
+    "33721":
+        enable_auth: true
+        authorization:
+            ops: fsGmHTbY4LzWlMBOxV1OX
+        dest: 192.168.55.2:33721
+    "37899":
+        enable_auth: true
+        authorization:
+            ops: RrWn5D1CNYxQvNG0DZI2J
+        dest: 172.31.236.163:8082
+    "39090":
+        enable_auth: true
+        authorization:
+            ops: VW6sHwf8uDbxENomBl3JS
+        dest: 172.21.53.19:9090
+    "39093":
+        enable_auth: true
+        authorization:
+            ops: 5Bn456NTPsSwY-_MZkit1
+        dest: 172.21.53.18:9093
+    "40002":
+        enable_auth: true
+        authorization:
+            ops: SC9EwT_cJxSM_pr3jzAiI
+        dest: 172.21.52.60:8082
+    "40003":
+        enable_auth: true
+        authorization:
+            ops: q3nY3iW4fNd7vPLU36fYH
+        dest: 172.22.241.242:9001
+    "40021":
+        enable_auth: true
+        authorization:
+            ops: kjXYuZV_To7ZnsT81QqFn
+        dest: 172.21.52.60:8081
+    "40031":
+        enable_auth: true
+        authorization:
+            ops: 4MFryFBzywiFgFBmfGLwD
+        dest: 172.22.241.35:8090
+    "40033":
+        enable_auth: true
+        authorization:
+            ops: 2B6VWPCOpxG9JtmY9MX1W
+        dest: 10.103.138.13:8888
+    "40038":
+        enable_auth: true
+        authorization:
+            ops: 1cpd9mCmuODbIRr7XUI6N
+        dest: 172.31.241.58:9000
+    "40040":
+        enable_auth: true
+        authorization:
+            ops: TV7t6QrQ1ud2CrmkuWfzQ
+        dest: 172.31.241.58:30080
+    "40042":
+        enable_auth: true
+        authorization:
+            ops: 73hQZBVviXdZQPgW455Te
+        dest: 172.31.241.58:9997
+    "40045":
+        enable_auth: true
+        authorization:
+            ops: hez7uCwEnGvmAd2ccEbKx
+        dest: 172.22.241.216:8080
+    "40046":
+        enable_auth: true
+        authorization:
+            ops: 1u6FwgkyaShSXN2lrDL-F
+        dest: 10.103.138.6:37799
+    "40047":
+        enable_auth: true
+        authorization:
+            ops: T4rrRhsKAbDtvQ7-qNi6F
+        dest: 10.103.138.6:8080
+    "40049":
+        enable_auth: true
+        authorization:
+            ops: E-APDCRfXl6ty08Qtm9e4
+        dest: 172.22.241.213:8849
+    "40050":
+        enable_auth: true
+        authorization:
+            ops: E4xKUqUem6dXHG1tOCkyM
+        dest: 172.21.122.95:30000
+    "40053":
+        enable_auth: true
+        authorization:
+            ops: e3BJsvBq5fD06AoNeWZPo
+        dest: 10.103.138.13:80
+    "40054":
+        enable_auth: true
+        authorization:
+            ops: JhtZNpFVdgm8qhty2AQ0U
+        dest: 172.21.51.101:9000
+    "40057":
+        enable_auth: true
+        authorization:
+            ops: dHRNeClOpnNx0JmeaM5v_
+        dest: 172.21.53.19:41675
+    "40066":
+        enable_auth: true
+        authorization:
+            ops: OusRoz8U9Fi315Tbgw2mJ
+        dest: 172.31.241.58:9990
+    "40070":
+        enable_auth: true
+        authorization:
+            ops: 2hl6uG-QZFiGn51y7tCmJ
+        dest: 172.21.191.130:8088
+    "40071":
+        enable_auth: true
+        authorization:
+            ops: 6KdMuCb7mEEowKx5YRi8l
+        dest: 10.1.190.203:8089
+    "40073":
+        enable_auth: true
+        authorization:
+            ops: ffc-Wlh2DxVfonFKglhh2
+        dest: 10.105.113.35:2379
+    "40074":
+        enable_auth: true
+        authorization:
+            ops: wXQCoQ92rjESguHlwUcj9
+        dest: 10.105.113.26:3000
+    "40077":
+        enable_auth: true
+        authorization:
+            ops: OtDdSOa3VvWcaKbTRgM1d
+        dest: 172.21.191.134:8848
+    "40080":
+        enable_auth: true
+        authorization:
+            ops: 7QZTG6uw2EWMOb_ETLnk9
+        dest: 172.21.51.52:8071
+    "40081":
+        enable_auth: true
+        authorization:
+            ops: fOobshlx7GTQsCxWMe-2H
+        dest: 172.21.51.50:8848
+    "40082":
+        enable_auth: true
+        authorization:
+            ops: l8AKJCIcAliiOwccP9znU
+        dest: 172.21.52.77:8000
