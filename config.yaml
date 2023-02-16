@@ -1,5 +1,6 @@
 system:
   listen: :8080
+  session_ttl: 24 # 单位：小时
 
 portmap:
   # 监听端口
@@ -20,6 +21,13 @@ portmap:
     authorization:
       jwping: jwping
     dest: 172.16.59.106:5319
+
+  38087:
+    # enable: false
+    enable_auth: true
+    authorization:
+      jwping: jwping
+    dest: 172.16.59.106:38888
 
   # 38087:
   #   # enable: true

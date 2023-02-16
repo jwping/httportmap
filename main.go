@@ -18,6 +18,10 @@ import (
 	"syscall"
 	"time"
 
+	"httportmap-server/sessions"
+
+	ginsessions "github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
 	gonanoid "github.com/matoous/go-nanoid/v2"
 	"gopkg.in/yaml.v3"
 )
@@ -49,53 +53,66 @@ import (
 // 	log.Fatal(http.ListenAndServe(":8080", proxy))
 // }
 
+var store = cookie.NewStore([]byte("voiceads-sre"))
+
 func newAuthorizationHandle(srcPort string) func(w http.ResponseWriter, req *http.Request) {
 	authorizationHandle := func(w http.ResponseWriter, req *http.Request) {
 		if httPortMap.PortMap[srcPort].EnableAuth {
-			auth := req.Header.Get("Authorization")
-			if auth == "" {
-				w.Header().Set("WWW-Authenticate", `Basic realm="Dotcoo User Login"`)
-				w.WriteHeader(http.StatusUnauthorized)
-				return
-			}
-			auths := strings.SplitN(auth, " ", 2)
-			if len(auths) != 2 {
-				w.Header().Set("WWW-Authenticate", `Basic realm="agent User Login"`)
-				w.WriteHeader(http.StatusUnauthorized)
-				return
-			}
-			authMethod := auths[0]
-			authB64 := auths[1]
-			switch authMethod {
-			case "Basic":
-				authstr, err := base64.StdEncoding.DecodeString(authB64)
-				if err != nil || string(authstr) == ":" {
+			s := sessions.NewSession("sre-session", req, store, w)
+			session_ttl := s.Get("session_ttl_" + srcPort)
+			ttl_unix, ok := session_ttl.(int64)
+
+			if !ok || ttl_unix == 0 || time.Unix(ttl_unix, 0).Before(time.Now().Add(time.Hour*time.Duration(httPortMap.System.SessionTTL)*-1)) {
+				auth := req.Header.Get("Authorization")
+				if auth == "" {
+					w.Header().Set("WWW-Authenticate", `Basic realm="Dotcoo User Login"`)
+					w.WriteHeader(http.StatusUnauthorized)
+					return
+				}
+				auths := strings.SplitN(auth, " ", 2)
+				if len(auths) != 2 {
+					w.Header().Set("WWW-Authenticate", `Basic realm="agent User Login"`)
+					w.WriteHeader(http.StatusUnauthorized)
+					return
+				}
+				authMethod := auths[0]
+				authB64 := auths[1]
+				switch authMethod {
+				case "Basic":
+					authstr, err := base64.StdEncoding.DecodeString(authB64)
+					if err != nil || string(authstr) == ":" {
+						w.Header().Set("WWW-Authenticate", `Basic realm="agent User Login"`)
+						w.WriteHeader(http.StatusUnauthorized)
+						return
+					}
+
+					userPwd := strings.SplitN(string(authstr), ":", 2)
+					if len(userPwd) != 2 || userPwd[0] == "" || userPwd[1] == "" {
+						w.Header().Set("WWW-Authenticate", `Basic realm="agent User Login"`)
+						w.WriteHeader(http.StatusUnauthorized)
+						return
+					}
+					username := userPwd[0]
+					password := userPwd[1]
+					if httPortMap.PortMap[srcPort].Authorization[username] != password {
+						w.Header().Set("WWW-Authenticate", `Basic realm="agent User Login"`)
+						w.WriteHeader(http.StatusUnauthorized)
+						return
+					}
+
+					req.Header.Del("Authorization")
+					s.Set("session_ttl_"+srcPort, time.Now().Unix())
+					s.Save()
+
+				default:
 					w.Header().Set("WWW-Authenticate", `Basic realm="agent User Login"`)
 					w.WriteHeader(http.StatusUnauthorized)
 					return
 				}
 
-				userPwd := strings.SplitN(string(authstr), ":", 2)
-				if len(userPwd) != 2 || userPwd[0] == "" || userPwd[1] == "" {
-					w.Header().Set("WWW-Authenticate", `Basic realm="agent User Login"`)
-					w.WriteHeader(http.StatusUnauthorized)
-					return
-				}
-				username := userPwd[0]
-				password := userPwd[1]
-				if httPortMap.PortMap[srcPort].Authorization[username] != password {
-					w.Header().Set("WWW-Authenticate", `Basic realm="agent User Login"`)
-					w.WriteHeader(http.StatusUnauthorized)
-					return
-				}
-			default:
-				w.Header().Set("WWW-Authenticate", `Basic realm="agent User Login"`)
-				w.WriteHeader(http.StatusUnauthorized)
-				return
+				// 因为我们加了身份验证头，所以在"向后传递"的时候需求去掉这个请求头（如果用户访问的后端本身也带这个请求头，，，那就GG）
+				// req.Header.Del("Authorization")
 			}
-
-			// 因为我们加了身份验证头，所以在"向后传递"的时候需求去掉这个请求头（如果用户访问的后端本身也带这个请求头，，，那就GG）
-			req.Header.Del("Authorization")
 		}
 
 		// io.WriteString(w, "hello, world!\n")
@@ -153,7 +170,8 @@ func (d *DestAddr) update(dest DestAddr) {
 }
 
 type System struct {
-	Listen string `yaml:"listen"`
+	Listen     string `yaml:"listen"`
+	SessionTTL int    `yaml:"session_ttl"`
 }
 
 type HttPortMap struct {
@@ -209,7 +227,7 @@ func reloadConfig(cPath string) {
 		return
 	}
 
-	// fmt.Printf("反序列化结构：%v\n", tproxyPortMap.PortMap["38085"])
+	// fmt.Printf("反序列化结构：%v\n", thttPortMap)
 
 	for srcPort, destAddr := range httPortMap.PortMap {
 		_, ok := thttPortMap.PortMap[srcPort]
@@ -327,6 +345,9 @@ func main() {
 	}
 
 	reloadConfig(*cPath)
+
+	store.Options(ginsessions.Options{MaxAge: httPortMap.System.SessionTTL * 60 * 60})
+
 	httpServer()
 
 	c := make(chan os.Signal)
