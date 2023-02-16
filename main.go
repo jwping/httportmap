@@ -100,7 +100,9 @@ func newAuthorizationHandle(srcPort string) func(w http.ResponseWriter, req *htt
 						return
 					}
 
-					req.Header.Del("Authorization")
+					// Authorization好像是删不掉的，是在一次浏览器生命周期中？
+					// req.Header.Del("Authorization")
+					// w.Header().Del("Authorization")
 					s.Set("session_ttl_"+srcPort, time.Now().Unix())
 					s.Save()
 
