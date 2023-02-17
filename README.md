@@ -26,7 +26,9 @@ $ go run main.go -map http_map
 {"time":"2023-02-17T11:09:52.8127847+08:00","level":"INFO","source":"/home/jwping/gopath/httportmap-server/main.go:63","msg":"生成成功！"}
 
 # 运行，注意：默认是使用config.yaml配置文件
-$ go run main.go
-{"time":"2023-02-17T10:58:02.8313642+08:00","level":"INFO","source":"/home/jwping/gopath/httportmap-server/internal/server/server.go:27","msg":"服务管理接口已启动","!BADKEY":":8080"}
-{"time":"2023-02-17T10:58:02.8315939+08:00","level":"INFO","source":"/home/jwping/gopath/httportmap-server/main.go:89","msg":"服务启动完成！"}
+$ go run main.go -log_level -4
+{"time":"2023-02-17T11:12:44.4446151+08:00","level":"DEBUG","source":"/home/jwping/gopath/httportmap-server/internal/server/muxserver.go:126","msg":"linsten","38086":"destAddress","!BADKEY":"172.16.59.106:5319"}
+{"time":"2023-02-17T11:12:44.444711+08:00","level":"DEBUG","source":"/home/jwping/gopath/httportmap-server/internal/server/muxserver.go:126","msg":"linsten","38087":"destAddress","!BADKEY":"172.16.59.106:38888"}
+{"time":"2023-02-17T11:12:44.4447289+08:00","level":"INFO","source":"/home/jwping/gopath/httportmap-server/internal/server/server.go:27","msg":"服务管理接口已启动","!BADKEY":":8080"}
+{"time":"2023-02-17T11:12:44.4447845+08:00","level":"INFO","source":"/home/jwping/gopath/httportmap-server/main.go:89","msg":"服务启动完成！"}
 ```
