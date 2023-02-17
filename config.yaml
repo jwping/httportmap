@@ -1,35 +1,31 @@
 system:
+  # 查看http映射池的地址
   listen: :8080
+  # 一次认证的最大会话保持时间
   session_ttl: 24 # 单位：小时
 
 portmap:
   # 监听端口
-  38085:
-    # 此http映射是否启用
+  38086:
+    # 此http映射是否启用（废弃）
     # enable: true
     # 身份验证器是否启用
     enable_auth: true
     authorization:
-      # 身份验证用户名和密码，可多个（符合yaml列表语法）
+      # 身份验证用户名和密码，可多个
+      jwping: jwping
       anshan: anshan
     # 目标http的地址
-    dest: 172.16.59.106:30002
-
-  38086:
-    # enable: false
-    enable_auth: true
-    authorization:
-      jwping: jwping
     dest: 172.16.59.106:5319
 
   38087:
     # enable: false
-    enable_auth: true
+    enable_auth: false
     authorization:
       jwping: jwping
     dest: 172.16.59.106:38888
 
-  # 38087:
+  # 38088:
   #   # enable: true
   #   enable_auth: true
   #   authorization:

@@ -4,10 +4,10 @@ go 1.18
 
 require (
 	github.com/gin-contrib/sessions v0.0.5
-	github.com/google/uuid v1.3.0
 	github.com/gorilla/sessions v1.2.1
+	github.com/jwping/logger v0.2.2
 	github.com/matoous/go-nanoid/v2 v2.0.0
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
+	gopkg.in/yaml.v2 v2.2.8
 )
 
 require (
@@ -26,6 +26,7 @@ require (
 	github.com/modern-go/reflect2 v0.0.0-20180701023420-4b7aa43c6742 // indirect
 	github.com/ugorji/go/codec v1.1.7 // indirect
 	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83 // indirect
-	golang.org/x/sys v0.0.0-20220408201424-a24fb2fb8a0f // indirect
-	gopkg.in/yaml.v2 v2.2.8 // indirect
+	golang.org/x/exp v0.0.0-20221215174704-0915cd710c24 // indirect
+	golang.org/x/sys v0.1.0 // indirect
+	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
